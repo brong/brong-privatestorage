@@ -1,6 +1,5 @@
 - more tests
 - a way to filter , either to avoid abuse ( too much data ), or to prevent dos
-- check if someone do not try to write someone else ( as explained in the jep )
 - enhance the DBI module : 
     better schema ( primary key )
     allow to give a different name for the table

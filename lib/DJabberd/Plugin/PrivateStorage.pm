@@ -33,16 +33,19 @@ sub register {
 
     my $private_cb = sub {
         my ($vh, $cb, $iq) = @_;
+
         unless ($iq->isa("DJabberd::IQ")) {
             $cb->decline;
             return;
         }
-        if(my $to = $iq->to_jid) {
+
+        if (my $to = $iq->to_jid) {
             unless ($vh->handles_jid($to)) {
                 $cb->decline;
                 return;
             }
         }
+
         if ($iq->signature eq 'get-{jabber:iq:private}query') {
             $self->_get_privatestorage($vh, $iq);
             $cb->stop_chain;
@@ -52,20 +55,31 @@ sub register {
             $cb->stop_chain;
             return;
         }
+
         $cb->decline;
     };
-    $vhost->register_hook("switch_incoming_client",$private_cb);
-    $vhost->register_hook("switch_incoming_server",$private_cb);
-    # should be done ?
-    #$vhost->add_feature("vcard-temp");
 
+    $vhost->register_hook("switch_incoming_client", $private_cb);
+    $vhost->register_hook("switch_incoming_server", $private_cb);
 }
 
 sub _get_privatestorage {
     my ($self, $vhost, $iq) = @_;
-    my $user  = $iq->connection->bound_jid->as_bare_string;
-    my $content = $iq->first_element()->first_element();; 
+    my $user    = $iq->connection->bound_jid->as_bare_string;
+
+    # check if it's the same user 
+    if (my $to = $iq->to_jid) {
+        my $bareto = $to->as_bare_string();
+        unless ($user eq $bareto) {
+            # not allowed (see XEP-0049: Example 3)
+            $iq->make_error_response('403', 'cancel', 'service-unavailable')->deliver($vhost);
+            return;
+        }
+    } 
+
+    my $content = $iq->first_element()->first_element();
     my $element = $content->element();
+
     $logger->info("Get private storage for user : $user, $element ");
     my $on_response = sub {
         my $cb = shift;
@@ -97,9 +111,21 @@ sub _get_privatestorage {
 sub _set_privatestorage {
     my ($self, $vhost, $iq) = @_;
 
-    my $user  = $iq->connection->bound_jid->as_bare_string;
-    my $content = $iq->first_element()->first_element();; 
+    my $user = $iq->connection->bound_jid->as_bare_string;
+
+    # check if it's the same user 
+    if (my $to = $iq->to_jid) {
+        my $bareto = $to->as_bare_string();
+        unless ($user eq $bareto) {
+            # not allowed (see XEP-0049: Example 3)
+            $iq->make_error_response('403', 'cancel', 'service-unavailable')->deliver($vhost);
+            return;
+        }
+    } 
+
+    my $content = $iq->first_element()->first_element();
     my $element = $content->element();
+
     $logger->info("Set private storage for user '$user', on $element");
     my $on_error = sub {
         $iq->make_error_response('500', "wait", "internal-server-error")->deliver($vhost);
