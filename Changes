@@ -1,5 +1,8 @@
 Revision history for DJabberd-Plugin-PrivateStorage
 
+0.xx    04/08/2008
+        Non-blocking interface  -- "Bron Gondwana" <perlcode@brong.net>
+
 0.60    03/12/2006
         First version on CPAN.
 
