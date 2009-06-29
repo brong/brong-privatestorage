@@ -33,7 +33,7 @@ sub test_server($) {
         </iq>});
 
     my $xml = $client->recv_xml_obj;
-    bless $xml, 'DJabberd::IQ';
+    $xml = DJabberd::IQ->downbless($xml);
     ok($xml->id eq '1001');
     ok($xml->type eq 'result');
 
@@ -44,7 +44,7 @@ sub test_server($) {
         </iq>});
 
     $xml = $client->recv_xml_obj;
-    bless $xml, 'DJabberd::IQ';
+    $xml = DJabberd::IQ->downbless($xml);
     ok($xml->id eq '1002', "ID");
     ok($xml->first_element->inner_ns eq "jabber:iq:private", "Namespace");
     ok($xml->signature eq "result-{jabber:iq:private}query", "Signature" );
@@ -63,7 +63,7 @@ sub test_server($) {
         </iq>});
 
     $xml = $client->recv_xml_obj;
-    bless $xml, 'DJabberd::IQ';
+    $xml = DJabberd::IQ->downbless($xml);
     ok($xml->id eq '1003');
     ok($xml->type eq 'result');
 
@@ -74,7 +74,7 @@ sub test_server($) {
         </iq>});
 
     $xml = $client->recv_xml_obj;
-    bless $xml, 'DJabberd::IQ';
+    $xml = DJabberd::IQ->downbless($xml);
     ok($xml->id eq '1004', "ID update");
     ok($xml->first_element->inner_ns eq "jabber:iq:private", "Namespace update");
     ok($xml->signature eq "result-{jabber:iq:private}query", "Signature update" );
